@@ -11,7 +11,7 @@ Then, install the necessary python libraries (I recommend a venv):
 ```bash
 python3 -m venv ./venv
 source venv/bin/activate
-pip install pyjwt bcrypt pymongo
+pip install flask pyjwt bcrypt pymongo
 ```
 
 Install mongodb (see [here](https://www.mongodb.com/docs/manual/installation/))
