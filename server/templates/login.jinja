@@ -1,0 +1,25 @@
+{% extends "base.jinja" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+    <form action="/login" method="POST">
+        <label for="username">Username</label>
+        <input type="text" name="username" id="username">
+
+        <br>
+
+        <label for="password">Password</label>
+        <input type="password" name="password" id="password">
+
+        <br>
+
+        <button type="submit">Login</button>
+
+        <br>
+
+        <a href="/register">or register</a>
+
+        <br>
+
+        <span style="color:maroon;">{{ request.args.get('msg', '') }}</span>
+    </form>
+{% endblock %}

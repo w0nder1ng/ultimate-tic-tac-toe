@@ -1,0 +1,19 @@
+{% extends "base.jinja" %}
+{% block title %}Upload{% endblock %}
+{% block content %}
+{% include "nav.jinja" %}
+<div class="main">
+    <h1>You are logged in as {{username}}</h1>
+    <br>
+    <p>Please read about <a href="/help">how to format your code</a> before submitting</p>
+    <br>
+    <form action="/upload" enctype="multipart/form-data" method="POST">
+        <input type="file" id="file" name="file">
+        <br>
+        <input type="submit" id="submit" name="submit">
+        <br>
+        <span class="err">{{ request.args.get('err', '') }}</span>
+        <!-- <span class="success">{{ request.args.get('success', '') }}</span> -->
+    </form>
+</div>
+{% endblock %}
