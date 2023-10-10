@@ -1,11 +1,13 @@
 * {
     margin: 0;
     padding: 0;
-    
+
 }
+
 form {
     padding: 5px;
 }
+
 nav {
     padding-top: 3px;
     padding-left: 10px;
@@ -13,7 +15,7 @@ nav {
 }
 
 .main {
-    width: 500px;
+    width: 800px;
     max-width: 100%;
     margin: 0 auto;
     padding: 50px;
@@ -32,4 +34,8 @@ nav {
 
 .nav-container {
     float: right;
+}
+
+ul > li {
+    margin-left: 10px;
 }
