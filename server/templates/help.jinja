@@ -1,37 +1,84 @@
 {% extends "base.jinja" %}
-{% block title %}Buy Tickets{% endblock %}
+{% block title %}Specification{% endblock %}
 {% block content %}
-{% include "nav.jinja" %}
-<div class="main">
-    <h1>File Structure</h1>
-    <p>To submit your code, name the file to be run "main" with no extension.
-        Then, zip it along with whatever files you require and submit.
-        The total unzipped size of your files must not exceed 10 megabytes.
-        If your file is not a binary, you will need a <a href="https://en.wikipedia.org/wiki/Shebang_(Unix)">shebang</a>
-        For example, for a python script, you might have something like this:
+    {% include "nav.jinja" %}
+    <div class="main">
+        <h2>Rules</h2>
+        <p>
+            The rules of Ultimate Tic-Tac-Toe are available <a href="https://mathwithbaddrawings.com/2013/06/16/ultimate-tic-tac-toe/">here</a>.
+            <br>
+            <br>
+        </p>
+        <h2>File Structure</h2>
+        <p>
+            To submit your code, name the file to be run "main" with no extension.
+            Then, zip it along with whatever files you require and submit.
+            The total unzipped size of your files must not exceed 10 megabytes.
+            If your file is not a binary, you will need a <a href="https://en.wikipedia.org/wiki/Shebang_(Unix)">shebang</a>.
+            For example, for a python script, you might have something like this:
+            <br>
+            <code>
+                #!/usr/local/bin/python3
+                <br>
+                print("test")
+            </code>
+            <br>
+            <br>
+        </p>
+        <b>Example zip:</b>
+        <ul>
+            <li>
+                code.zip
+                <ul>
+                    <li>main</li>
+                    <li>board_states.dat</li>
+                    <li>config.json</li>
+                    <li>note_to_self.txt</li>
+                </ul>
+            </li>
+        </ul>
         <br>
-        <code>
-            #!/usr/local/bin/python3
-            print("test")
-        </code>
+        <h2>Board Format</h2>
+        <p>The current game state will be passed to your script as follows:</p>
+        <code> > main "[board]" "[previous move]"</code>
         <br>
         <br>
-    </p>
-    <b>Example zip:</b>
-    <ul>
-        <li>code.zip
-            <ul>
-                <li>main</li>
-                <li>board_states.dat</li>
-                <li>config.json</li>
-                <li>note_to_self.txt</li>
-            </ul>
-        </li>
-
-    </ul>
-    <br>
-    <h1>Board format</h1>
-    <p>The current game state will be passed to your board as follows:</p>
-    <code>main "[board]" "[region]"</code>
-</div>
+        <p>
+            The board is formatted as a length 81 string.
+            Sub-boards are indexed as standard and each sub-board is listed in order, so that a board like this:
+            <br>
+            <code>
+                -------------------------   <br>
+                | a a a | d d d | g g g |   <br>
+                | b b b | e e e | h h h |   <br>
+                | c c c | f f f | i i i |   <br>
+                -------------------------   <br>
+                | j j j | n n n | q q q |   <br>
+                | k k k | o o o | r r r |   <br>
+                | l l l | p p p | s s s |   <br>
+                -------------------------   <br>
+                | t t t | w w w | z z z |   <br>
+                | u u u | x x x | a a a |   <br>
+                | v v v | y y y | b b b |   <br>
+                -------------------------   <br>
+            </code>
+            <br>
+            is represented by this string:
+            <br>
+            <code>
+                'aaabbbcccdddeeefffggghhhiiijjjkkklllnnnooopppqqqrrrssstttuuuvvvwwwxxxyyyzzzaaabbb'
+            </code>
+            <br>
+            <br>
+            Xs and Os will always be capitalized and periods are used to represent empty spaces,
+            so an example board to be parsed might look like this:
+            <code>
+                .X.XXO..OOO....XXXOOO...X..O.XO..OO....X.XOOO..X.OX.O..OXX.OXOOXX.XO.OXXX...X..OX
+            </code>
+            <br>
+            <br>
+            The previous move will be an integer 0-81 that represents the index of the last move that was made,
+            allowing your script to evaluate which sub-boards are in play for the current turn.
+        </p>
+    </div>
 {% endblock %}
