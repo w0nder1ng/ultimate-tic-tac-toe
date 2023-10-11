@@ -3,25 +3,37 @@ A server to host ultimate tic-tac-toe tournaments
 
 ## Running the server
 
+First, generate a secret using `init.sh`:
+```bash
+./init.sh
+```
+
 ### Docker
 
 In the root of the repository, run:
-```
+```bash
 docker compose up
 ```
 
+To run the server in development mode, run:
+```bash
+ENV=dev docker compose up
+```
+
+By default, Flask's auto-reloading feature is turned on.
+
 ### Native
 
-First, either generate a secret or copy the sample one:
+First, load the secret key:
 ```bash
-mv server/secret.fake server/secret
+source .env
 ```
 
 Then, install the necessary python libraries (I recommend a venv):
 ```bash
 python3 -m venv ./venv
 source venv/bin/activate
-pip install flask pyjwt bcrypt pymongo
+pip install -r server/requirements.txt
 ```
 
 Install mongodb (see [here](https://www.mongodb.com/docs/manual/installation/))
