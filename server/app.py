@@ -10,7 +10,7 @@ import time
 import bcrypt
 from functools import wraps
 import zipfile
-from os import path, getcwd, makedirs
+from os import path, getcwd, makedirs, getenv
 from pymongo import MongoClient
 
 MAX_UPLOAD_SIZE = 10 * 1024 * 1024
@@ -19,7 +19,7 @@ app = Flask(__name__)
 
 app.static_folder = "static"
 
-client = MongoClient()
+client = MongoClient(getenv("MONGO_URL", None))
 db = client.user_db
 users = db.users
 
@@ -41,7 +41,14 @@ def login_required():
     return _login_required
 
 
-secret = open("secret", "rb").read()
+secret = getenv("SECRET_KEY")
+
+if secret is None:
+    print("No secret found, using random bytes")
+    secret = uuid.uuid4().bytes
+else:
+    print("Using secret from env")
+    secret = secret.encode()
 
 
 def generate_token(id, username):
@@ -145,7 +152,8 @@ def post_upload(user):
                     return redirect(request.url + "?err=File+too+large")
                 print(user)
                 folder = path.join(
-                    getcwd(), "uploads", user["id"], time.strftime("%Y-%m-%d_%H-%M-%S")
+                    getcwd(), "uploads", user["id"], time.strftime(
+                        "%Y-%m-%d_%H-%M-%S")
                 )
                 makedirs(folder, exist_ok=True)
                 z.extractall(folder)
