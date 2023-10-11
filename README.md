@@ -2,6 +2,16 @@
 A server to host ultimate tic-tac-toe tournaments
 
 ## Running the server
+
+### Docker
+
+In the root of the repository, run:
+```
+docker compose up
+```
+
+### Native
+
 First, either generate a secret or copy the sample one:
 ```bash
 mv server/secret.fake server/secret
@@ -32,5 +42,3 @@ Start the app:
 ```bash
 cd server && flask --app app.py --debug run
 ```
-
-Eventually there will be a docker image but it isn't ready yet :((
