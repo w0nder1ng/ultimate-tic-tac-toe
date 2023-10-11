@@ -1,0 +1,20 @@
+version: '3'
+services:
+  db:
+    image: mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin
+  app:
+    build: server
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    environment:
+      - MONGO_URL=mongodb://admin:admin@db:27017
+      - ENV=${ENV}
+    env_file:
+      - .env
+    volumes:
+      - ./server:/app/
