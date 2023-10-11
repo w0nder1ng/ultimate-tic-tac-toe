@@ -13,5 +13,8 @@ services:
       - db
     environment:
       - MONGO_URL=mongodb://admin:admin@db:27017
+      - ENV=${ENV}
     env_file:
       - .env
+    volumes:
+      - ./server:/app/
