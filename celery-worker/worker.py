@@ -4,6 +4,8 @@ import subprocess
 from io import BytesIO
 import zipfile
 import time
+import shutil
+import tempfile
 
 MAX_UPLOAD_SIZE = 10 * 1024 * 1024
 
@@ -15,8 +17,8 @@ app = Celery(
 
 jail_options = ['-Mo', '-R', '/bin/', '-R', '/lib/', '-R', '/lib64/', '-R', '/usr/', '-R', '/sbin/', '-T', '/dev', '-R', '/dev/urandom', '--keep_caps', '--disable_proc']
 
-def run_nsjail(filepath, args):
-    return subprocess.run(["nsjail", *jail_options, "-R", filepath, "--cwd", filepath, "--", *args], capture_output=True, text=True)
+def run_nsjail(filepath, args, rw, time_limit):
+    return subprocess.run(["nsjail", *jail_options, "-B" if rw else "-R", filepath, "--cwd", filepath, "-t", time_limit, "--", *args], capture_output=True, text=True)
 
 bit_defs = {
     0b00: '.',
@@ -129,7 +131,18 @@ def upload_ai(user_id, file_data):
         return None
 
 @app.task(name="play_game")
-def play_game(filepath_x, filepath_o, init_time=-1, play_time=-1):
+def play_game(filepath_x, filepath_o, init_time, turn_time, rw):
+    # recursigettempprefixvely copy files from filepath_x and filepath_o to a temporary directory
+    if rw:
+        tempdir_x = path.join(tempfile.gettempdir(), next(tempfile._get_candidate_names()))
+        tempdir_o = path.join(tempfile.gettempdir(), next(tempfile._get_candidate_names()))
+        
+        shutil.copytree(filepath_x, tempdir_x)
+        shutil.copytree(filepath_o, tempdir_o)
+
+        filepath_x = tempdir_x
+        filepath_o = tempdir_o
+
     board_x = [0b000000000] * 9
     board_o = [0b000000000] * 9
     prev_idx = -1
@@ -139,16 +152,17 @@ def play_game(filepath_x, filepath_o, init_time=-1, play_time=-1):
     
     winner = None
     
+    # run init
     if path.exists(path.join(filepath_x, "init")):
-        res = run_nsjail(filepath_x, ["./init"])
+        res = run_nsjail(filepath_x, ["./init"], rw=rw, time_limit=init_time)
         x_logs.append(res.stdout)
     if path.exists(path.join(filepath_o, "init")):
-        res = run_nsjail(filepath_o, ["./init"])
+        res = run_nsjail(filepath_o, ["./init"], rw=rw, time_limit=init_time)
         o_logs.append(res.stdout)
 
     while True:
         board = board_to_string(board_x, board_o)
-        res = run_nsjail(filepath_x, ["./main", board, str(prev_idx)])
+        res = run_nsjail(filepath_x, ["./main", board, str(prev_idx)], rw=rw, time_limit=turn_time)
         x_logs.append(res.stdout)
 
         idx = int(res.stdout.split()[-1])
@@ -167,7 +181,7 @@ def play_game(filepath_x, filepath_o, init_time=-1, play_time=-1):
         board = board[:idx] + 'X' + board[idx+1:]
         prev_idx = idx
 
-        res = run_nsjail(filepath_o, ["./main", board, str(prev_idx)])
+        res = run_nsjail(filepath_o, ["./main", board, str(prev_idx)], rw=rw, time_limit=turn_time)
         o_logs.append(res.stdout)
 
         idx = int(res.stdout.split()[-1])
@@ -194,6 +208,10 @@ def play_game(filepath_x, filepath_o, init_time=-1, play_time=-1):
     else:
         x_logs.append("TIE")
         o_logs.append("TIE")
+
+    if rw:
+        shutil.rmtree(tempdir_x)
+        shutil.rmtree(tempdir_o)
     
     return winner, x_logs, o_logs
     

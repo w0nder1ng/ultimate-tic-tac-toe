@@ -170,9 +170,10 @@ def play():
 def play_post():
     ai_x = request.form["ai_x"]
     ai_o = request.form["ai_o"]
-    init_time = request.form.get("init_time", -1)
-    play_time = request.form.get("play_time", -1)
-    res = celery_app.send_task("play_game", args=[ai_x, ai_o, init_time, play_time])
+    init_time = request.form.get("init_time", 0)
+    turn_time = request.form.get("turn_time", 0)
+    rw = request.form.get("rw", False)
+    res = celery_app.send_task("play_game", args=[ai_x, ai_o, init_time, turn_time, rw])
     return redirect(f"/play/{res.id}")
 
 @app.route("/play/<id>")

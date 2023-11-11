@@ -51,4 +51,7 @@ def rand_ai(board, prev_move, player):
 board = sys.argv[1]
 prev_move = int(sys.argv[2])
 
+with open('test', 'r') as f:
+    print(f.read())
+
 print(rand_ai(board, prev_move, 'X'))
