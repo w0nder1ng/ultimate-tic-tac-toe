@@ -132,7 +132,6 @@ def upload_ai(user_id, file_data):
 
 @app.task(name="play_game")
 def play_game(filepath_x, filepath_o, init_time, turn_time, rw):
-    # recursigettempprefixvely copy files from filepath_x and filepath_o to a temporary directory
     if rw:
         tempdir_x = path.join(tempfile.gettempdir(), next(tempfile._get_candidate_names()))
         tempdir_o = path.join(tempfile.gettempdir(), next(tempfile._get_candidate_names()))
