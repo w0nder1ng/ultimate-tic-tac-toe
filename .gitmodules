@@ -1,3 +1,0 @@
-[submodule "celery-worker/nsjail"]
-	path = celery-worker/nsjail
-	url = https://github.com/google/nsjail.git
