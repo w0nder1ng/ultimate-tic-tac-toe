@@ -3,3 +3,5 @@ bcrypt
 PyJWT
 gunicorn
 pymongo
+celery
+redis

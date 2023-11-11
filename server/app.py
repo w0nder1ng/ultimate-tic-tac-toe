@@ -4,25 +4,29 @@ import base64
 
 # import random
 import jwt
-import time
 
 # import toml
 import bcrypt
 from functools import wraps
 import zipfile
-from os import path, getcwd, makedirs, getenv
+from os import getenv
 from pymongo import MongoClient
-
-MAX_UPLOAD_SIZE = 10 * 1024 * 1024
+from celery import Celery, Task
+from celery.result import AsyncResult
+import subprocess
 
 app = Flask(__name__)
-
 app.static_folder = "static"
+
+celery_app = Celery(
+    "ultimate-tic-tac-toe",
+    broker=getenv("CELERY_BROKER_URL", "redis://localhost:6379"),
+    backend=getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379")
+)
 
 client = MongoClient(getenv("MONGO_URL", None))
 db = client.user_db
 users = db.users
-
 
 def login_required():
     def _login_required(f):
@@ -145,28 +149,41 @@ def post_upload(user):
     if file.filename == "":
         return redirect(request.url + "?err=No+file+provided")
     if file:
-        try:
-            with zipfile.ZipFile(file) as z:
-                size = sum(zinfo.file_size for zinfo in z.filelist)
-                if size > MAX_UPLOAD_SIZE:
-                    return redirect(request.url + "?err=File+too+large")
-                print(user)
-                folder = path.join(
-                    getcwd(), "uploads", user["id"], time.strftime(
-                        "%Y-%m-%d_%H-%M-%S")
-                )
-                makedirs(folder, exist_ok=True)
-                z.extractall(folder)
-        except (zipfile.BadZipFile, ValueError) as e:
-            return redirect(request.url + "?err=Bad+zip+file")
-        # file.save(path.join(getcwd(), f"uploads/{user['id']}"))
-    return redirect("/play")
+        res = celery_app.send_task("upload_ai", args=[user["id"], file.read()])
+        return redirect(f"/upload/{res.id}")
+    return redirect(request.url + "?err=No+file+provided")
+
+@app.route("/upload/<id>")
+def upload_id(id):
+    result = AsyncResult(id, app=celery_app)
+    return {
+        "state": result.state,
+        "filepath": result.result if result.ready() else None,
+    }
 
 
 @app.route("/play")
 def play():
-    return "WIP", 200
+    return render_template("play.jinja")
 
+@app.route("/play", methods=["POST"])
+def play_post():
+    ai_x = request.form["ai_x"]
+    ai_o = request.form["ai_o"]
+    init_time = request.form.get("init_time", -1)
+    play_time = request.form.get("play_time", -1)
+    res = celery_app.send_task("play_game", args=[ai_x, ai_o, init_time, play_time])
+    return redirect(f"/play/{res.id}")
+
+@app.route("/play/<id>")
+def play_id(id):
+    result = AsyncResult(id, app=celery_app)
+    return {
+        "state": result.state,
+        "winner": result.result[0] if result.ready() else None,
+        "x_logs": result.result[1] if result.ready() else None,
+        "o_logs": result.result[2] if result.ready() else None,
+    }
 
 if __name__ == "__main__":
     app.run('0.0.0.0', debug=True)

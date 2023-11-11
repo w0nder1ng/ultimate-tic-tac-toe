@@ -1,0 +1,10 @@
+{% extends "base.jinja" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+{% include "nav.jinja" %}
+    <form method="POST">
+        <input type="text" name="ai_x" placeholder="X">
+        <input type="text" name="ai_o" placeholder="O">
+        <input type="submit" value="Submit">
+    </form>
+{% endblock %}
