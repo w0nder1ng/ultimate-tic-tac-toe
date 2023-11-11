@@ -170,8 +170,8 @@ def play():
 def play_post():
     ai_x = request.form["ai_x"]
     ai_o = request.form["ai_o"]
-    init_time = request.form.get("init_time", 0)
-    turn_time = request.form.get("turn_time", 0)
+    init_time = request.form.get("init_time", "0")
+    turn_time = request.form.get("turn_time", "0")
     rw = request.form.get("rw", False)
     res = celery_app.send_task("play_game", args=[ai_x, ai_o, init_time, turn_time, rw])
     return redirect(f"/play/{res.id}")
@@ -182,8 +182,9 @@ def play_id(id):
     return {
         "state": result.state,
         "winner": result.result[0] if result.ready() else None,
-        "x_logs": result.result[1] if result.ready() else None,
-        "o_logs": result.result[2] if result.ready() else None,
+        "reason": result.result[1] if result.ready() else None,
+        "x_logs": result.result[2] if result.ready() else None,
+        "o_logs": result.result[3] if result.ready() else None,
     }
 
 if __name__ == "__main__":

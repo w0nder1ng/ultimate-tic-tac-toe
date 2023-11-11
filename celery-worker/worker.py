@@ -150,6 +150,7 @@ def play_game(filepath_x, filepath_o, init_time, turn_time, rw):
     o_logs = []
     
     winner = None
+    reason = None
     
     # run init
     if path.exists(path.join(filepath_x, "init")):
@@ -164,10 +165,16 @@ def play_game(filepath_x, filepath_o, init_time, turn_time, rw):
         res = run_nsjail(filepath_x, ["./main", board, str(prev_idx)], rw=rw, time_limit=turn_time)
         x_logs.append(res.stdout)
 
-        idx = int(res.stdout.split()[-1])
+        try:
+            idx = int(res.stdout.split()[-1])
+        except (IndexError, ValueError):
+            winner = 'O'
+            reason = 'Invalid output'
+            break
 
         if idx not in generate_valid_moves(board, prev_idx):
             winner = 'O'
+            reason = 'Invalid move'
             break
 
         sub = idx_to_sub(idx)
@@ -175,6 +182,7 @@ def play_game(filepath_x, filepath_o, init_time, turn_time, rw):
 
         if win(board_x):
             winner = 'X'
+            reason = 'Win'
             break
 
         board = board[:idx] + 'X' + board[idx+1:]
@@ -183,10 +191,16 @@ def play_game(filepath_x, filepath_o, init_time, turn_time, rw):
         res = run_nsjail(filepath_o, ["./main", board, str(prev_idx)], rw=rw, time_limit=turn_time)
         o_logs.append(res.stdout)
 
-        idx = int(res.stdout.split()[-1])
+        try:
+            idx = int(res.stdout.split()[-1])
+        except (IndexError, ValueError):
+            winner = 'X'
+            reason = 'Invalid output'
+            break
 
         if idx not in generate_valid_moves(board, prev_idx):
             winner = 'X'
+            reason = 'Invalid move'
             break
 
         sub = idx_to_sub(idx)
@@ -194,23 +208,21 @@ def play_game(filepath_x, filepath_o, init_time, turn_time, rw):
 
         if win(board_o):
             winner = 'O'
+            reason = 'Win'
             break
 
         prev_idx = idx
     
-    if winner == 'X':
-        x_logs.append("WIN")
-        o_logs.append("LOSE")
-    elif winner == 'O':
-        x_logs.append("LOSE")
-        o_logs.append("WIN")
+    if winner is None:
+        x_logs.append(f'[SERVER] Tie')
+        o_logs.append(f'[SERVER] Tie')
     else:
-        x_logs.append("TIE")
-        o_logs.append("TIE")
+        x_logs.append(f'[SERVER] {winner} wins: {reason}')
+        o_logs.append(f'[SERVER] {winner} wins: {reason}')
 
     if rw:
         shutil.rmtree(tempdir_x)
         shutil.rmtree(tempdir_o)
     
-    return winner, x_logs, o_logs
+    return winner, reason, x_logs, o_logs
     
