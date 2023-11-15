@@ -1,0 +1,14 @@
+{% extends "base.jinja" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+{% include "nav.jinja" %}
+    <form method="POST">
+        <input type="text" name="ai_x" placeholder="X">
+        <input type="text" name="ai_o" placeholder="O">
+        <input type="number" name="init_time" placeholder="Init Time">
+        <input type="number" name="turn_time" placeholder="Turn Time">
+        <input type="checkbox" name="rw" id="rw" value="1">
+        <label for="rw">Read/Write</label>
+        <input type="submit" value="Submit">
+    </form>
+{% endblock %}

@@ -4,3 +4,4 @@ __pycache__/
 venv/
 server/secret
 .env
+celery-worker/uploads/

@@ -1,18 +1,33 @@
 version: '3'
 services:
   db:
-    image: mongo
+    image: mongo:7.0-rc-jammy
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=admin
+  redis:
+    image: redis:7.2.3-alpine
+  celery:
+    build: celery-worker
+    depends_on:
+      - redis
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379
+      - CELERY_RESULT_BACKEND=redis://redis:6379
+    volumes:
+      - ./celery-worker/uploads:/app/uploads/
+    privileged: true
   app:
     build: server
     ports:
       - "5000:5000"
     depends_on:
       - db
+      - celery
     environment:
       - MONGO_URL=mongodb://admin:admin@db:27017
+      - CELERY_BROKER_URL=redis://redis:6379
+      - CELERY_RESULT_BACKEND=redis://redis:6379
       - ENV=${ENV}
     env_file:
       - .env
